@@ -1,14 +1,15 @@
+import numpy as np
 import jax.numpy as jnp
 from jax import grad, jit, vmap
 from jax.scipy.optimize import minimize
 from .constants import Lsun, c, h, HeI_edge, HeII_edge, OII_edge
 
 # Load constant data (using JAX-compatible structures)
-cont_lam = jnp.array(jnp.loadtxt(resource_filename("cue", "data/FSPSlam.dat")))
+cont_lam = jnp.array(np.loadtxt(resource_filename("cue", "data/FSPSlam.dat")))
 cont_nu = c / cont_lam
 
-new_unsorted_line_name = jnp.array(jnp.load(resource_filename("cue", "data/lineList_replaceblnd_name.npy")))
-new_unsorted_line_lam = jnp.array(jnp.load(resource_filename("cue", "data/lineList_wav.npy")))
+new_unsorted_line_name = jnp.array(np.load(resource_filename("cue", "data/lineList_replaceblnd_name.npy")))
+new_unsorted_line_lam = jnp.array(np.load(resource_filename("cue", "data/lineList_wav.npy")))
 new_sorted_line_name = new_unsorted_line_name[jnp.argsort(new_unsorted_line_lam)]
 new_sorted_line_lam = jnp.sort(new_unsorted_line_lam)
 
