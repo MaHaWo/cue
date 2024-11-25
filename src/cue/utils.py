@@ -1,11 +1,11 @@
 import numpy as np
 import jax.numpy as jnp
-from jax import grad, jit, vmap
+from jax import jit
 from jax.scipy.optimize import minimize
 from pkg_resources import resource_filename
 from .constants import Lsun, c, h, HeI_edge, HeII_edge, OII_edge
 
-# Load constant data (using JAX-compatible structures)
+# Load constant data (numeric)
 cont_lam = jnp.array(np.loadtxt(resource_filename("cue", "data/FSPSlam.dat")))
 cont_nu = c / cont_lam
 
@@ -15,10 +15,13 @@ new_unsorted_line_lam = np.load(resource_filename("cue", "data/lineList_wav.npy"
 
 # Sorting and converting numerical data to JAX
 sorted_indices = np.argsort(new_unsorted_line_lam)
-new_sorted_line_name = new_unsorted_line_name[sorted_indices]  # Keep as NumPy array
-new_sorted_line_lam = jnp.array(new_unsorted_line_lam[sorted_indices])  # Convert to JAX array for numerical operations
+new_sorted_line_name = new_unsorted_line_name[sorted_indices]  # Keep as NumPy array for string processing
+new_sorted_line_lam = jnp.array(new_unsorted_line_lam[sorted_indices])  # Convert to JAX array for computations
 
+# Extract elements and handle strings in NumPy
 new_ele_arr = np.array([name[:4].strip() for name in new_sorted_line_name])
+
+# Define line indices
 line_new_added = jnp.where(
     (new_sorted_line_lam == 4685.68) | (new_sorted_line_lam == 1550.77) |
     (new_sorted_line_lam == 1548.19) | (new_sorted_line_lam == 1750.00) |
@@ -28,8 +31,8 @@ line_new_added = jnp.where(
 )[0]
 
 line_old = np.array([i for i in range(138) if i not in line_new_added])
-nn_name = jnp.array(['H1', 'He1', 'He2', 'C1', 'C2C3', 'C4', 'N', 'O1', 'O2', 'O3',
-                     'ionE_1', 'ionE_2', 'S4', 'Ar4', 'Ne3', 'Ne4'])
+nn_name = np.array(['H1', 'He1', 'He2', 'C1', 'C2C3', 'C4', 'N', 'O1', 'O2', 'O3',
+                    'ionE_1', 'ionE_2', 'S4', 'Ar4', 'Ne3', 'Ne4'])
 
 # Helper function to calculate wavelength ranges for different ions
 def calculate_nn_wavelengths(nn_ion, ele_arr, sorted_line_lam):
@@ -37,12 +40,13 @@ def calculate_nn_wavelengths(nn_ion, ele_arr, sorted_line_lam):
     for ion in nn_ion:
         indices = []
         if isinstance(ion, str):
-            indices = jnp.where(ele_arr == ion)[0]
+            indices = np.where(ele_arr == ion)[0]
         else:
             for sub_ion in ion:
-                indices.extend(jnp.where(ele_arr == sub_ion)[0])
-        selections.append(jnp.sort(jnp.array(indices)))
-    return jnp.array(selections, dtype=object), sorted_line_lam[jnp.concatenate(selections)]
+                indices.extend(np.where(ele_arr == sub_ion)[0])
+        selections.append(np.sort(np.array(indices)))
+    concatenated_indices = np.concatenate(selections)
+    return concatenated_indices, sorted_line_lam[concatenated_indices]
 
 nn_ion = [
     ['H  1'], ['He 1'], ['He 2'], ['C  1'], ['C  2', 'C  3'], ['C  4'],
@@ -51,6 +55,7 @@ nn_ion = [
     ['Al 3', 'Si 3', 'S  3', 'Cl 3', 'Ar 3', 'Ne 2'],
     ['S  4'], ['Ar 4'], ['Ne 3'], ['Ne 4']
 ]
+
 nn_wav_selection, nn_wavelength = calculate_nn_wavelengths(nn_ion, new_ele_arr, new_sorted_line_lam)
 
 line_name = new_sorted_line_name[line_old]
@@ -85,7 +90,6 @@ def Qtotal(param, edges):
         log_Qtotal = log_Qtotal.at[i].set(param[i, 1] + jnp.log10(Lsun) - jnp.log10(h) + jnp.log10(term))
     return log_Qtotal
 
-# Compute ionizing photons (optimized with JAX)
 @jit
 def calcQ(lamin, spec, mstar=1.0, helium=False, f_nu=True):
     lam_min = 304.0 if helium else 911.6
@@ -95,7 +99,6 @@ def calcQ(lamin, spec, mstar=1.0, helium=False, f_nu=True):
     integrand = spec[inds] / (h * x_vals) if f_nu else lamin[inds] * spec[inds] / (h * c)
     return jnp.trapz(integrand, x=x_vals) * (1.0 if f_nu else mstar)
 
-# Optimizer-based power-law fitting (JAX-compatible)
 @jit
 def fit_power_laws(wav, spec, bins=[HeII_edge, OII_edge, HeI_edge, 911.6]):
     bins = jnp.insert(jnp.array(bins), 0, 1)
@@ -111,4 +114,3 @@ def fit_power_laws(wav, spec, bins=[HeII_edge, OII_edge, HeI_edge, 911.6]):
         )
         coefficients.append(result.x)
     return jnp.array(coefficients)
-
