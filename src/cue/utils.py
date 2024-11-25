@@ -9,12 +9,16 @@ from .constants import Lsun, c, h, HeI_edge, HeII_edge, OII_edge
 cont_lam = jnp.array(np.loadtxt(resource_filename("cue", "data/FSPSlam.dat")))
 cont_nu = c / cont_lam
 
-new_unsorted_line_name = np.array(np.load(resource_filename("cue", "data/lineList_replaceblnd_name.npy")))
-new_unsorted_line_lam = jnp.array(np.load(resource_filename("cue", "data/lineList_wav.npy")))
-new_sorted_line_name = new_unsorted_line_name[jnp.argsort(new_unsorted_line_lam)]
-new_sorted_line_lam = jnp.sort(new_unsorted_line_lam)
+# Handle non-numeric (string) data with NumPy
+new_unsorted_line_name = np.load(resource_filename("cue", "data/lineList_replaceblnd_name.npy"))
+new_unsorted_line_lam = np.load(resource_filename("cue", "data/lineList_wav.npy"))
 
-new_ele_arr = jnp.array([name[:4].strip() for name in new_sorted_line_name])
+# Sorting and converting numerical data to JAX
+sorted_indices = np.argsort(new_unsorted_line_lam)
+new_sorted_line_name = new_unsorted_line_name[sorted_indices]  # Keep as NumPy array
+new_sorted_line_lam = jnp.array(new_unsorted_line_lam[sorted_indices])  # Convert to JAX array for numerical operations
+
+new_ele_arr = np.array([name[:4].strip() for name in new_sorted_line_name])
 line_new_added = jnp.where(
     (new_sorted_line_lam == 4685.68) | (new_sorted_line_lam == 1550.77) |
     (new_sorted_line_lam == 1548.19) | (new_sorted_line_lam == 1750.00) |
@@ -23,7 +27,7 @@ line_new_added = jnp.where(
     (new_sorted_line_lam == 4711.26) | (new_sorted_line_lam == 4740.12)
 )[0]
 
-line_old = jnp.array([i for i in range(138) if i not in line_new_added])
+line_old = np.array([i for i in range(138) if i not in line_new_added])
 nn_name = jnp.array(['H1', 'He1', 'He2', 'C1', 'C2C3', 'C4', 'N', 'O1', 'O2', 'O3',
                      'ionE_1', 'ionE_2', 'S4', 'Ar4', 'Ne3', 'Ne4'])
 
