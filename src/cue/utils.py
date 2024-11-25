@@ -100,7 +100,7 @@ def calcQ(lamin, spec, mstar=1.0, helium=False, f_nu=True):
     return jnp.trapz(integrand, x=x_vals) * (1.0 if f_nu else mstar)
 
 @jit
-def fit_power_laws(wav, spec, bins=[HeII_edge, OII_edge, HeI_edge, 911.6]):
+def fit_4loglinear_ionparam(wav, spec, bins=[HeII_edge, OII_edge, HeI_edge, 911.6]):
     bins = jnp.insert(jnp.array(bins), 0, 1)
     indices = jnp.array([jnp.max(jnp.where(wav <= edge)[0]) for edge in bins]) + 1
     coefficients = []
