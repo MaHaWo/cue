@@ -2,6 +2,7 @@ import numpy as np
 import jax.numpy as jnp
 from jax import grad, jit, vmap
 from jax.scipy.optimize import minimize
+from pkg_resources import resource_filename
 from .constants import Lsun, c, h, HeI_edge, HeII_edge, OII_edge
 
 # Load constant data (using JAX-compatible structures)
