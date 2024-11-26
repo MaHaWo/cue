@@ -5,6 +5,9 @@ from flax import linen as nn
 from scipy.interpolate import CubicSpline
 from .line_pca import SpectrumPCA
 from .utils import nn_wavelength, nn_name, logQ
+import numpy as np
+import os
+import tensorflow as tf
 
 
 class JAXPCA:
@@ -132,8 +135,45 @@ class Predict:
         combined = jnp.hstack(this_spec)
         return jnp.squeeze(combined[:, wavind_sorted][:, self.line_ind])
 
+def load_pca_basis(filepath="data/pca_cont_new.pkl"):
+    """
+    Load PCA basis from a file and convert it to a JAX array.
+    
+    Parameters:
+        filepath (str): Path to the PCA basis file.
+        
+    Returns:
+        jax.numpy.array: PCA basis as a JAX-compatible array.
+    """
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"PCA basis file not found: {filepath}")
+    pca_basis = np.load(filepath)  # Load with NumPy
+    return jnp.array(pca_basis)    # Convert to JAX array
 
-def get_line(par, pca_basis, nn):
+def load_nn_model(filepath="data/nn_stats_v0.pkl"):
+    """
+    Load a TensorFlow NN model and convert its weights to JAX arrays.
+    
+    Parameters:
+        filepath (str): Path to the TensorFlow model file.
+        
+    Returns:
+        dict: Dictionary of weights converted to JAX arrays.
+    """
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"Neural network model file not found: {filepath}")
+    
+    # Load TensorFlow model
+    tf_model = tf.keras.models.load_model(filepath)
+    
+    # Extract weights and convert to JAX arrays
+    jax_weights = {var.name: jnp.array(var.numpy()) for var in tf_model.weights}
+    return jax_weights
+
+pca_basis = load_pca_basis()
+nn_weights = load_nn_model()
+
+def get_line(par, pca_basis=pca_basis, nn= nn_weights):
     """
     A wrapper of nebular line emulator for SED fitting.
     """
