@@ -5,6 +5,7 @@ import numpy as np
 import pickle
 import glob
 from sklearn.decomposition import IncrementalPCA
+
 class SpectrumPCA_line():
     """
     SPECULATOR PCA compression class
