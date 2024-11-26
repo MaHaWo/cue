@@ -22,7 +22,7 @@ except(ImportError):
 with open(resource_filename("cue", "data/pca_cont_new.pkl"), 'rb') as f:
     cont_PCABasis = pickle.load(f)
 cont_speculator = Speculator(restore = True, 
-                             restore_filename = resource_filename("cue", "data/speculator_cont_new.pkl"))
+                             restore_filename = resource_filename("cue", "data/speculator_cont_new"))
 
 #par = pd.DataFrame(data={'num':par[:,0], 'index1':par[:,2], 'index2':par[:,3], 'index3':par[:,4], 'index4':par[:,5], 
 #                         'delta_logL1':par[:,6], 'delta_logL2':par[:,7], 'delta_logL3':par[:,8],

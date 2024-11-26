@@ -12,7 +12,7 @@ from .line_pca import SpectrumPCA
 for this_name in nn_name:
     with open(resource_filename("cue", "data/pca_line_new_"+this_name+".pkl"), 'rb') as f:
         globals()["PCABasis_"+this_name] = pickle.load(f)
-    globals()["speculator_"+this_name] = Speculator(restore=True, restore_filename=resource_filename("cue", "data/speculator_line_new_"+this_name+".pkl"))
+    globals()["speculator_"+this_name] = Speculator(restore=True, restore_filename=resource_filename("cue", "data/speculator_line_new_"+this_name))
 
 line_PCABasis = [globals()["PCABasis_"+this_name] for this_name in nn_name]
 line_speculator = [globals()["speculator_"+this_name] for this_name in nn_name]
@@ -21,7 +21,7 @@ from .cont_pca import SpectrumPCA
 with open(resource_filename("cue", "data/pca_cont_new.pkl"), 'rb') as f:
     cont_PCABasis = pickle.load(f)
 cont_speculator = Speculator(restore = True,
-                             restore_filename = resource_filename("cue", "data/speculator_cont_new.pkl"))
+                             restore_filename = resource_filename("cue", "data/speculator_cont_new"))
 
 class Emulator():
     """
