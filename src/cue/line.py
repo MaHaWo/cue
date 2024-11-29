@@ -181,6 +181,7 @@ class predict():
         if self.theta is None:
             if (np.size(log_QH)==1):
                 self.n_sample = 1
+                print("theta is None")
                 self.theta = np.hstack([gammas, log_L_ratios, log_QH, n_H, 
                                         log_OH_ratio, log_NO_ratio, log_CO_ratio]).reshape((1, 12)) #10**log_NO_ratio, 10**log_CO_ratio
             else:
