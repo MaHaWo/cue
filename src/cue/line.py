@@ -177,31 +177,31 @@ class predict():
         self.nn = nn
         self.n_segments = np.size(nn)
         self.wavelength = np.array(wavelength)
-        self.line_ind = line_ind
-        self.theta = theta
-        if self.theta is None:
-            if (np.size(log_QH)==1):
-                self.n_sample = 1
-                print("theta is None")
-                self.theta = np.hstack([gammas, log_L_ratios, log_QH, n_H, 
-                                        log_OH_ratio, log_NO_ratio, log_CO_ratio]).reshape((1, 12)) #10**log_NO_ratio, 10**log_CO_ratio
-            else:
-                self.n_sample = len(log_QH)
-                self.gammas = np.array(gammas)
-                self.log_L_ratios = np.array(log_L_ratios)
-                self.log_QH = np.reshape(log_QH, (len(log_QH), 1))
-                self.n_H = np.reshape(n_H, (len(n_H), 1))
-                self.log_OH_ratio = np.reshape(log_OH_ratio, (len(log_OH_ratio), 1))
-                self.log_NO_ratio = np.reshape(log_NO_ratio, (len(log_NO_ratio), 1))
-                self.log_CO_ratio = np.reshape(log_CO_ratio, (len(log_CO_ratio), 1))
-                self.theta = np.hstack([self.gammas, self.log_L_ratios, self.log_QH, self.n_H, 
-                                        self.log_OH_ratio, self.log_NO_ratio, self.log_CO_ratio]) #10**self.log_NO_ratio, 10**self.log_CO_ratio
-        else:
+        self.line_ind = line_indta}"
+
+        print(f"theta is this value: {theta}")
+        print(f"theta has shape: {theta.shape}")
+        if theta is not None:
             self.theta = np.array(theta)
             self.n_sample = len(self.theta)
-            #self.theta[:,-2:] = 10**self.theta[:,-2:]
-        #raise ValueError('NEBULAR PARAMETER ERROR: input {0} parameters but required 12'.format(len(theta[0]))
-    
+        # If theta is not provided, construct it from other parameters
+        elif log_QH is not None and gammas is not None and log_L_ratios is not None:
+            if np.size(log_QH) == 1:
+                self.n_sample = 1
+                self.theta = np.hstack([gammas, log_L_ratios, log_QH, n_H,
+                                        log_OH_ratio, log_NO_ratio, log_CO_ratio]).reshape((1, 12))
+            else:
+                self.n_sample = len(log_QH)
+                self.theta = np.hstack([np.array(gammas), np.array(log_L_ratios),
+                                        np.reshape(log_QH, (len(log_QH), 1)),
+                                        np.reshape(n_H, (len(n_H), 1)),
+                                        np.reshape(log_OH_ratio, (len(log_OH_ratio), 1)),
+                                        np.reshape(log_NO_ratio, (len(log_NO_ratio), 1)),
+                                        np.reshape(log_CO_ratio, (len(log_CO_ratio), 1))])
+        else:
+            raise ValueError("Either theta must be provided or sufficient parameters to construct theta must be provided.")
+
+
     def nn_predict(self):
 
         # shift and scale
