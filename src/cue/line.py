@@ -178,7 +178,7 @@ class predict():
         self.n_segments = np.size(nn)
         self.wavelength = np.array(wavelength)
         self.line_ind = line_ind
-        if theta is None:
+        if self.theta is None:
             if (np.size(log_QH)==1):
                 self.n_sample = 1
                 self.theta = np.hstack([gammas, log_L_ratios, log_QH, n_H, 
