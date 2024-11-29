@@ -177,7 +177,7 @@ class predict():
         self.nn = nn
         self.n_segments = np.size(nn)
         self.wavelength = np.array(wavelength)
-        self.line_ind = line_indta}"
+        self.line_ind = line_ind
 
         print(f"theta is this value: {theta}")
         print(f"theta has shape: {theta.shape}")
